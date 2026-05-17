@@ -16,8 +16,9 @@ miru itself initiates network requests in exactly these situations:
 | `miru update` | `github.com/hir4ta/miru/releases/download/<tag>/miru_*.tar.gz` | Download the release tarball | Same |
 | `miru update` | `github.com/hir4ta/miru/releases/download/<tag>/checksums.txt` | Verify the tarball's SHA-256 before applying | Same |
 | `b` (browser preview) on a Markdown file | local `file://` URI | Open the rendered HTML in your default browser | Don't press `b` |
+| `b` (browser preview), once the page loads | `cdn.jsdelivr.net` / `fonts.googleapis.com` / `fonts.gstatic.com` | Fetched by your browser for mermaid.js and the Caveat hand-drawn font | Don't press `b`, or block the hosts |
 
-The browser preview page embeds `<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">`. **Your browser fetches that script when it loads the page.** This is a third-party network request initiated by your browser, not by miru. To avoid it, do not press `b`, or use a browser with the script blocked (uBlock Origin, NoScript).
+The browser preview page embeds `<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs">` and a Google Fonts stylesheet (`https://fonts.googleapis.com/css2?family=Caveat...`, which in turn fetches the woff2 from `fonts.gstatic.com`) used for the hand-drawn diagram labels. **Your browser fetches these resources when it loads the page.** These are third-party network requests initiated by your browser, not by miru. To avoid them, do not press `b`, or use a browser with the resources blocked (uBlock Origin, NoScript).
 
 `miru install` does not make any network requests. `miru <file>` (the default TUI view) does not make any network requests.
 
@@ -26,6 +27,7 @@ The browser preview page embeds `<script src="https://cdn.jsdelivr.net/npm/merma
 - **GitHub Releases / GitHub raw content.** When you install via `curl -fsSL .../install.sh | sh` or `miru update`, your client fetches from `github.com` and `raw.githubusercontent.com`. GitHub's privacy policy applies to those connections.
 - **Homebrew.** `brew install hir4ta/tap/miru` follows Homebrew's normal install pipeline; see [Homebrew's analytics policy](https://docs.brew.sh/Analytics).
 - **jsDelivr CDN.** The browser preview's mermaid script is served by `cdn.jsdelivr.net`. See [jsDelivr's privacy policy](https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-net).
+- **Google Fonts.** The browser preview's hand-drawn diagram font (Caveat) is served by `fonts.googleapis.com` and `fonts.gstatic.com`. See [Google's privacy policy](https://policies.google.com/privacy) and the [Google Fonts FAQ](https://developers.google.com/fonts/faq#what_does_using_the_google_fonts_api_mean_for_the_privacy_of_my_users).
 
 ## Local data written by miru
 

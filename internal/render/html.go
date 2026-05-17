@@ -26,6 +26,9 @@ const htmlTemplate = `<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <title>{{.Title}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap" rel="stylesheet">
 <style>{{.CSS}}</style>
 <style>
 :root { color-scheme: dark light; }
@@ -37,8 +40,17 @@ body.markdown-body {
   padding: 45px;
 }
 @media (max-width: 767px) { body.markdown-body { padding: 15px; } }
-.mermaid { display: flex; justify-content: center; margin: 1em 0; }
-.mermaid svg { max-width: 100%; height: auto; }
+.mermaid { display: flex; justify-content: center; margin: 1.25em 0; }
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+  font-family: "Caveat", "Virgil", "Patrick Hand", cursive;
+  font-size: 18px;
+}
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid .cluster-label,
+.mermaid text { font-family: inherit; }
 </style>
 </head>
 <body class="markdown-body">
@@ -46,7 +58,13 @@ body.markdown-body {
 <script type="module">
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
+mermaid.initialize({
+  startOnLoad: false,
+  look: "handDrawn",
+  theme: dark ? "dark" : "neutral",
+  securityLevel: "loose",
+  fontFamily: "Caveat, Virgil, cursive",
+});
 document.querySelectorAll("pre > code.language-mermaid").forEach(code => {
   const div = document.createElement("div");
   div.className = "mermaid";
