@@ -2,7 +2,9 @@ package render
 
 import (
 	"bytes"
+	"crypto/rand"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"path/filepath"
@@ -24,6 +26,7 @@ const htmlTemplate = `<!DOCTYPE html>
 <html lang="mul">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-{{.Nonce}}' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <title>{{.Title}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -280,7 +283,7 @@ body.markdown-body {
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js"></script>
-<script type="module">
+<script type="module" nonce="{{.Nonce}}">
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 mermaid.initialize({
   startOnLoad: false,
@@ -373,6 +376,17 @@ type htmlTemplateData struct {
 	CSS        template.CSS
 	Body       template.HTML
 	HasMermaid bool
+	Nonce      string
+}
+
+// makeNonce returns a base64-encoded random nonce for use in the page's CSP
+// `script-src` directive. A fresh nonce per render keeps the inline mermaid
+// loader executable while blocking any unauthorised `<script>` smuggled in
+// from raw HTML in the user's Markdown.
+func makeNonce() string {
+	b := make([]byte, 16)
+	_, _ = rand.Read(b)
+	return base64.StdEncoding.EncodeToString(b)
 }
 
 func ToHTML(filename, markdown string) ([]byte, error) {
@@ -418,6 +432,7 @@ func ToHTML(filename, markdown string) ([]byte, error) {
 		CSS:        template.CSS(css),
 		Body:       template.HTML(body.String()),
 		HasMermaid: hasMermaidBlock(markdown),
+		Nonce:      makeNonce(),
 	})
 	if err != nil {
 		return nil, err
