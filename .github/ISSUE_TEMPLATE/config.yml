@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/hir4ta/miru/security/advisories/new
+    about: Report a security vulnerability privately. Do not file a public issue.
+  - name: Question
+    url: https://github.com/hir4ta/miru/discussions
+    about: Open a discussion instead of an issue for usage questions.
