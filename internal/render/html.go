@@ -303,16 +303,21 @@ await mermaid.run();
 const modal = document.getElementById("mermaid-zoom");
 const stage = document.getElementById("mermaid-zoom-stage");
 const closeBtn = document.getElementById("mermaid-zoom-close");
-const hint = stage.querySelector(".mermaid-zoom__hint");
 let panZoom = null;
+let previousFocus = null;
 
 function closeModal() {
   if (panZoom) { panZoom.destroy(); panZoom = null; }
   stage.querySelectorAll("svg").forEach(svg => svg.remove());
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden", "true");
+  if (previousFocus && typeof previousFocus.focus === "function") {
+    try { previousFocus.focus(); } catch (_) { /* element may be gone */ }
+  }
+  previousFocus = null;
 }
 function openModal(sourceSvg) {
+  previousFocus = document.activeElement;
   const clone = sourceSvg.cloneNode(true);
   clone.removeAttribute("style");
   clone.setAttribute("width", "100%");
@@ -320,6 +325,7 @@ function openModal(sourceSvg) {
   stage.appendChild(clone);
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
+  closeBtn.focus();
   panZoom = svgPanZoom(clone, {
     controlIconsEnabled: false,
     fit: true,
@@ -332,10 +338,33 @@ function openModal(sourceSvg) {
 closeBtn.addEventListener("click", closeModal);
 modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+  if (!modal.classList.contains("open")) return;
+  if (e.key === "Escape") { closeModal(); return; }
+  if (e.key === "Tab") {
+    // The dialog only exposes one focusable element (the close button);
+    // keep keyboard navigation inside the dialog while it is open.
+    e.preventDefault();
+    closeBtn.focus();
+  }
 });
+// Defensive trap: if focus escapes (e.g. assistive tech jump), pull it back.
+document.addEventListener("focusin", e => {
+  if (modal.classList.contains("open") && !modal.contains(e.target)) {
+    closeBtn.focus();
+  }
+});
+// Make inline diagrams keyboard-accessible: Enter / Space opens the zoom modal.
 document.querySelectorAll(".mermaid > svg").forEach(svg => {
+  svg.setAttribute("role", "button");
+  svg.setAttribute("tabindex", "0");
+  svg.setAttribute("aria-label", "Open diagram in zoom view");
   svg.addEventListener("click", () => openModal(svg));
+  svg.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openModal(svg);
+    }
+  });
 });
 </script>
 {{- end}}
