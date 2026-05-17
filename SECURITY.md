@@ -75,8 +75,15 @@ miru's primary attack surfaces:
 
 miru is solo-maintained. To keep changes auditable without a co-maintainer:
 
-- **PRs are required for every change to `main`** (enforced by repository ruleset). Direct push, force push, and branch deletion are blocked. Linear history is required, so merges land as squash commits.
-- **Required CI checks** (all must pass before merge): `test` (`go test -race`), `shellcheck`, `actionlint`, `codeql (go)`, `codeql (actions)`, `govulncheck`, `scan` (gitleaks).
+- **PRs are required for every change to `main`** (enforced by repository ruleset). Direct push, force push, and branch deletion are blocked. Linear history is required, so merges land without merge commits (squash or rebase only — the project convention is squash).
+- **Required CI checks** (all must pass before merge), listed as `workflow / job`:
+  - `ci / test` — `go test -race ./...` (`.github/workflows/ci.yml`)
+  - `ci / shellcheck` — `shellcheck install.sh` (`ci.yml`)
+  - `ci / actionlint` — workflow YAML lint (`ci.yml`)
+  - `codeql / codeql (go)` — CodeQL `+security-extended` on Go code (`codeql.yml`)
+  - `codeql / codeql (actions)` — CodeQL on workflow files (`codeql.yml`)
+  - `govulncheck / govulncheck` — Go vulnerability database scan (`govulncheck.yml`)
+  - `gitleaks / scan` — secret leak scan (`gitleaks.yml`)
 - **Required conversation resolution** — any reviewer thread on a PR must be resolved before merge.
 - **Required approving reviewers: 0**, because GitHub disallows the PR author from approving their own PR and there is no co-maintainer. The gap is intentionally filled by automated reviewers, not by a rubber-stamp human:
   - **Copilot code review** (ruleset-triggered) runs on every PR open and re-runs on push.
