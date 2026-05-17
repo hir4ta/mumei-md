@@ -300,8 +300,8 @@ func ToHTML(filename, markdown string) ([]byte, error) {
 }
 
 // hasMermaidBlock reports whether the markdown contains at least one fenced
-// code block declared as `mermaid`. Used to gate mermaid.js + Caveat font
-// loading so plain markdown previews stay fully local.
+// code block declared as `mermaid`. Used to gate mermaid.js loading so plain
+// Markdown previews avoid the jsDelivr fetch.
 func hasMermaidBlock(markdown string) bool {
 	source := []byte(markdown)
 	root := goldmark.New().Parser().Parse(text.NewReader(source))

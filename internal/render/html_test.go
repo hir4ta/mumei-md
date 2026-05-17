@@ -40,21 +40,24 @@ func TestToHTML_FontsAlwaysLoadedMermaidGated(t *testing.T) {
 
 	// Every Markdown preview pulls Caveat / Patrick Hand / Klee One for the
 	// paper-note look — regardless of mermaid presence.
-	for name, md := range map[string]string{"with-mermaid": withMermaid, "no-mermaid": withoutMermaid} {
-		out, err := ToHTML("x.md", md)
-		if err != nil {
-			t.Fatalf("%s: %v", name, err)
-		}
-		for _, want := range []string{
-			`fonts.googleapis.com/css2?family=Caveat`,
-			`family=Patrick+Hand`,
-			`family=Klee+One`,
-			`"Patrick Hand"`,
-		} {
-			if !strings.Contains(string(out), want) {
-				t.Errorf("%s: html missing %q", name, want)
+	cases := map[string]string{"with-mermaid": withMermaid, "no-mermaid": withoutMermaid}
+	for name, md := range cases {
+		t.Run("fonts-always-loaded/"+name, func(t *testing.T) {
+			out, err := ToHTML("x.md", md)
+			if err != nil {
+				t.Fatal(err)
 			}
-		}
+			for _, want := range []string{
+				`fonts.googleapis.com/css2?family=Caveat`,
+				`family=Patrick+Hand`,
+				`family=Klee+One`,
+				`"Patrick Hand"`,
+			} {
+				if !strings.Contains(string(out), want) {
+					t.Errorf("html missing %q", want)
+				}
+			}
+		})
 	}
 
 	// Mermaid-specific assets stay gated on the presence of a mermaid block.
