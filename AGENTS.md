@@ -136,7 +136,7 @@ best theme experience.
   `SourceToHTML`; Markdown uses `ToHTML`. The Markdown HTML page
   is rendered as a handwritten paper note (cream background +
   horizontal ruling + Caveat for headings + Patrick Hand for
-  body + Klee One for CJK), so it always embeds the Google
+  body + Kiwi Maru for CJK), so it always embeds the Google
   Fonts stylesheet. When the Markdown also contains a `mermaid`
   code block, the page additionally embeds mermaid.js from
   jsDelivr and the diagram renders in `look: "handDrawn"`. The

@@ -50,7 +50,7 @@ func TestToHTML_FontsAlwaysLoadedMermaidGated(t *testing.T) {
 			for _, want := range []string{
 				`fonts.googleapis.com/css2?family=Caveat`,
 				`family=Patrick+Hand`,
-				`family=Klee+One`,
+				`family=Kiwi+Maru`,
 				`"Patrick Hand"`,
 			} {
 				if !strings.Contains(string(out), want) {

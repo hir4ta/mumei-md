@@ -30,35 +30,27 @@ const htmlTemplate = `<!DOCTYPE html>
 <title>{{.Title}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Patrick+Hand&family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Patrick+Hand&family=Kiwi+Maru:wght@400;500&display=swap" rel="stylesheet">
 <style>{{.CSS}}</style>
 <style>
-:root { color-scheme: light; --paper: #fdf6e3; --rule: #e5dcc5; --ink: #3a342c; --accent: #d97757; --muted: #7a6c52; --highlight: #ffe599; }
+:root { color-scheme: light; --paper: #fdf6e3; --ink: #3a342c; --accent: #d97757; --muted: #7a6c52; --highlight: #ffe599; }
 html, body { background: var(--paper); }
 body.markdown-body {
   box-sizing: border-box;
   min-width: 200px;
-  max-width: 880px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 56px 64px;
   background-color: var(--paper);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(1.7em - 1px),
-    var(--rule) calc(1.7em - 1px),
-    var(--rule) 1.7em
-  );
-  background-position: 0 0.8em;
   color: var(--ink);
-  font-family: "Patrick Hand", "Klee One", "ヒラギノ丸ゴ ProN", "Hiragino Maru Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  font-family: "Patrick Hand", "Kiwi Maru", "ヒラギノ丸ゴ ProN", "Hiragino Maru Gothic ProN", "Yu Gothic", system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.7em;
 }
 @media (max-width: 767px) { body.markdown-body { padding: 24px 18px; } }
 .markdown-body h1, .markdown-body h2, .markdown-body h3,
 .markdown-body h4, .markdown-body h5, .markdown-body h6 {
-  font-family: "Caveat", "Klee One", cursive;
+  font-family: "Caveat", "Kiwi Maru", cursive;
   font-weight: 700;
   color: var(--accent);
   line-height: 1.2;
