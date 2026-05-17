@@ -45,3 +45,10 @@ func New(filename, raw, theme string) Model {
 func (m Model) Init() tea.Cmd {
 	return nil
 }
+
+// Err returns the most recent error encountered during the session, or nil.
+// Used by main to surface a non-zero exit code when rendering or persistence
+// failed mid-run.
+func (m Model) Err() error {
+	return m.err
+}

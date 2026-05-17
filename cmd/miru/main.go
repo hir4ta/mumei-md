@@ -66,9 +66,16 @@ func main() {
 	}
 
 	m := tui.New(path, string(raw), resolvedTheme)
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	final, err := tea.NewProgram(m).Run()
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "run: %v\n", err)
 		os.Exit(1)
+	}
+	if fm, ok := final.(tui.Model); ok {
+		if e := fm.Err(); e != nil {
+			fmt.Fprintf(os.Stderr, "miru: %v\n", e)
+			os.Exit(1)
+		}
 	}
 }
 

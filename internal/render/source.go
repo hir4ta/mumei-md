@@ -54,9 +54,6 @@ func (s *Source) Render(filename, content string) (string, error) {
 
 	style := chromaStyleFor(s.theme)
 	formatter := formatters.Get("terminal16m")
-	if formatter == nil {
-		formatter = formatters.Get("terminal256")
-	}
 
 	var buf bytes.Buffer
 	if err := formatter.Format(&buf, style, iter); err != nil {

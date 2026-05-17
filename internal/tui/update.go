@@ -46,17 +46,20 @@ func (m *Model) renderContent() error {
 }
 
 // applyTheme rebuilds the active renderer with the given theme, re-renders
-// the content, and persists the choice to the config file.
+// the content, and persists the choice to the config file. Failures are
+// recorded in m.err so they surface on exit instead of failing silently.
 func (m *Model) applyTheme(name string) {
 	if m.isMarkdown {
 		ansi, err := render.NewANSI(m.winW, name)
 		if err != nil {
+			m.err = err
 			return
 		}
 		m.ansi = ansi
 	} else {
 		src, err := render.NewSource(m.winW, name)
 		if err != nil {
+			m.err = err
 			return
 		}
 		m.source = src
@@ -66,7 +69,9 @@ func (m *Model) applyTheme(name string) {
 		m.err = err
 		return
 	}
-	_ = config.Save(config.Config{Theme: name})
+	if err := config.Save(config.Config{Theme: name}); err != nil {
+		m.err = err
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
