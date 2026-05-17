@@ -1,0 +1,17 @@
+# Normalize line endings: text files are LF on disk regardless of OS.
+* text=auto eol=lf
+
+# Go source explicitly tab-indented; do not let editors auto-convert.
+*.go text eol=lf
+
+# Binary classifications so Git does not try to diff or merge them.
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.gz   binary
+*.tar  binary
+*.zip  binary
+
+# Files that GitHub linguist should not count toward the language stats.
+go.sum                                           linguist-generated
+internal/render/assets/github-markdown.css       linguist-vendored
