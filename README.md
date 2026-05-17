@@ -125,12 +125,13 @@ Files with a `.md` / `.markdown` extension take the markdown path (glamour ANSI 
 
 ### Browser preview (`b`)
 
-Pressing `b` writes the file to a temporary HTML page and opens it with your default browser:
+Pressing `b` starts a loopback HTTP server on `127.0.0.1:<random>` scoped to the file's project root (the first ancestor with `.git`, `go.mod`, `package.json`, `Cargo.toml`, or `pyproject.toml`; otherwise the file's own directory) and opens the rendered page with your default browser. The server lives only while the TUI is open and stops when you quit (`q`). Relative Markdown links (e.g. `[guide](./docs/guide.md)`) are followed by re-rendering the linked file through the same pipeline:
 
 - **Markdown** — goldmark with GFM extensions, [github-markdown.css](https://github.com/sindresorhus/github-markdown-css), and inlined [mermaid.js](https://mermaid.js.org/) from a CDN for ` ```mermaid ` blocks.
 - **Source files** — chroma with line numbers and a dark theme.
+- **Images / binaries** — served raw with the right Content-Type.
 
-The browser path follows the same conventions as common Markdown previewers (Obsidian, VS Code preview): raw HTML inside Markdown is rendered as-is and mermaid runs with `securityLevel: "loose"`. **Only browser-render files you trust.** The TUI view (default `miru <file>`) is pure ANSI text — no scripts, no remote fetches.
+The browser path follows the same conventions as common Markdown previewers (Obsidian, VS Code preview): raw HTML inside Markdown is rendered as-is and mermaid runs with `securityLevel: "loose"`. Inline `<script>` smuggled in via raw HTML is blocked by a per-render nonce-based Content-Security-Policy (`script-src 'nonce-…' 'strict-dynamic'`), so an untrusted Markdown cannot exfiltrate sibling files via the loopback origin. **Still, only browser-render files you trust.** The TUI view (default `miru <file>`) is pure ANSI text — no scripts, no remote fetches.
 
 ## Key bindings
 

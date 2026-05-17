@@ -2,13 +2,12 @@ package render
 
 import (
 	"bytes"
+	"crypto/rand"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"html/template"
-	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
@@ -27,6 +26,7 @@ const htmlTemplate = `<!DOCTYPE html>
 <html lang="mul">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-{{.Nonce}}' 'strict-dynamic'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <title>{{.Title}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -282,8 +282,8 @@ body.markdown-body {
     <div class="mermaid-zoom__hint">scroll to zoom · drag to pan · esc to close</div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js"></script>
-<script type="module">
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.2/dist/svg-pan-zoom.min.js" nonce="{{.Nonce}}"></script>
+<script type="module" nonce="{{.Nonce}}">
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 mermaid.initialize({
   startOnLoad: false,
@@ -376,6 +376,21 @@ type htmlTemplateData struct {
 	CSS        template.CSS
 	Body       template.HTML
 	HasMermaid bool
+	Nonce      string
+}
+
+// makeNonce returns a base64-encoded random nonce for use in the page's CSP
+// `script-src` directive. A fresh nonce per render keeps the inline mermaid
+// loader executable while blocking any unauthorised `<script>` smuggled in
+// from raw HTML in the user's Markdown. An error here means crypto/rand is
+// not functioning; serving a page with a weak nonce would advertise a CSP
+// that does not actually protect anything, so we propagate the failure.
+func makeNonce() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("nonce: %w", err)
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
 }
 
 func ToHTML(filename, markdown string) ([]byte, error) {
@@ -415,12 +430,17 @@ func ToHTML(filename, markdown string) ([]byte, error) {
 		return nil, err
 	}
 
+	nonce, err := makeNonce()
+	if err != nil {
+		return nil, err
+	}
 	var out bytes.Buffer
 	err = tmpl.Execute(&out, htmlTemplateData{
 		Title:      filepath.Base(filename),
 		CSS:        template.CSS(css),
 		Body:       template.HTML(body.String()),
 		HasMermaid: hasMermaidBlock(markdown),
+		Nonce:      nonce,
 	})
 	if err != nil {
 		return nil, err
@@ -452,42 +472,3 @@ func hasMermaidBlock(markdown string) bool {
 	return found
 }
 
-func OpenInBrowser(filename, content string) error {
-	var htmlBytes []byte
-	var err error
-	if IsMarkdown(filename) {
-		htmlBytes, err = ToHTML(filename, content)
-	} else {
-		htmlBytes, err = SourceToHTML(filename, content)
-	}
-	if err != nil {
-		return err
-	}
-
-	f, err := os.CreateTemp("", "miru-*.html")
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(htmlBytes); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-
-	return openCmd(f.Name())
-}
-
-func openCmd(path string) error {
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "darwin":
-		cmd = exec.Command("open", path)
-	case "linux":
-		cmd = exec.Command("xdg-open", path)
-	default:
-		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
-	}
-	return cmd.Start()
-}

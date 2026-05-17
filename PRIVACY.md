@@ -15,7 +15,7 @@ miru itself initiates network requests in exactly these situations:
 | `miru update` | `github.com/hir4ta/miru/releases/latest` (HEAD) | Resolve the latest version tag from the redirect | Quit (`q` / `Ctrl+C`) before the request fires |
 | `miru update` | `github.com/hir4ta/miru/releases/download/<tag>/miru_*.tar.gz` | Download the release tarball | Same |
 | `miru update` | `github.com/hir4ta/miru/releases/download/<tag>/checksums.txt` | Verify the tarball's SHA-256 before applying | Same |
-| `b` (browser preview) on any file | local `file://` URI | Open the rendered HTML in your default browser | Don't press `b` |
+| `b` (browser preview) on any file | `http://127.0.0.1:<random>` (loopback only) | Open the rendered HTML in your default browser via a temporary loopback HTTP server that lives only while the TUI is open | Don't press `b` |
 | `b` (browser preview) on a Markdown file, once the page loads | `fonts.googleapis.com` / `fonts.gstatic.com` | Fetched by your browser for the paper-note fonts (Caveat for headings, Patrick Hand for body, Kiwi Maru for CJK) | Don't press `b` on Markdown, or block the hosts |
 | `b` (browser preview) on a Markdown file that contains a `mermaid` code block, once the page loads | `cdn.jsdelivr.net` | Fetched by your browser for mermaid.js and svg-pan-zoom (used for click-to-zoom on diagrams) | Don't press `b`, omit mermaid blocks, or block the host |
 
@@ -37,8 +37,9 @@ The Markdown browser preview always embeds the Google Fonts stylesheet (`https:/
 | `~/.config/miru/config.json` | First time you change the theme via `s` | `{"theme": "..."}` |
 | `<INSTALL_DIR>/miru` (default `~/.local/bin`) | After `curl | sh` bootstrap or `miru install` | The binary itself |
 | Shell rc (`.zshrc` / `.bashrc` / `.bash_profile` / `config.fish`) | After `miru install` if PATH does not already contain the install dir | One marked block: `# added by miru installer\nexport PATH="..."` |
-| `$TMPDIR/miru-*.html` | When you press `b` | Rendered HTML, removed by the OS when the temp directory is cleared |
 | `$TMPDIR/miru-update-*.tar.gz` | During `miru update` | The release tarball, removed on success or checksum mismatch |
+
+Pressing `b` no longer writes a temp HTML file — miru now serves the rendered page from an ephemeral loopback HTTP server (`127.0.0.1:<random>`) that exits when the TUI exits. The server is sandboxed to the file's project root (the first ancestor with `.git`, `go.mod`, `package.json`, `Cargo.toml`, or `pyproject.toml`; otherwise the file's own directory) so a relative link can only ever resolve within that tree.
 
 No other files are written. miru never writes to `~/.local/share/`, no daemons, no startup hooks.
 

@@ -3,6 +3,7 @@ package render
 import (
 	"bytes"
 	"fmt"
+	"html"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -91,8 +92,8 @@ func SourceToHTML(filename, content string) ([]byte, error) {
 		return nil, fmt.Errorf("write css: %w", err)
 	}
 
-	title := filepath.Base(filename)
-	lang := lexer.Config().Name
+	title := html.EscapeString(filepath.Base(filename))
+	lang := html.EscapeString(lexer.Config().Name)
 	var out bytes.Buffer
 	fmt.Fprintf(&out, sourceHTMLTemplate, title, cssBuf.String(), title, lang, codeBuf.String())
 	return out.Bytes(), nil

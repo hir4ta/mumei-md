@@ -172,7 +172,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport.SetYOffset(line)
 			}
 		case key.Matches(msg, m.keys.Browser):
-			cmds = append(cmds, openInBrowser(m.filename, m.raw))
+			cmds = append(cmds, openInBrowser(m.srv, m.filename))
 		}
 	}
 

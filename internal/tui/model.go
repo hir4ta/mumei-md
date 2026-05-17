@@ -7,6 +7,7 @@ import (
 
 	"github.com/hir4ta/miru/internal/nav"
 	"github.com/hir4ta/miru/internal/render"
+	"github.com/hir4ta/miru/internal/server"
 )
 
 type Model struct {
@@ -14,6 +15,7 @@ type Model struct {
 	raw        string
 	theme      string
 	isMarkdown bool
+	srv        *server.Server
 
 	ansi   *render.ANSI   // populated when isMarkdown
 	source *render.Source // populated otherwise
@@ -31,12 +33,13 @@ type Model struct {
 	err        error
 }
 
-func New(filename, raw, theme string) Model {
+func New(filename, raw, theme string, srv *server.Server) Model {
 	return Model{
 		filename:   filename,
 		raw:        raw,
 		theme:      theme,
 		isMarkdown: render.IsMarkdown(filename),
+		srv:        srv,
 		keys:       DefaultKeyMap(),
 		help:       help.New(),
 	}

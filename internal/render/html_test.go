@@ -143,3 +143,61 @@ func TestSourceToHTML_StaysLocal(t *testing.T) {
 		}
 	}
 }
+
+func TestToHTML_AppliesNonceBasedCSP(t *testing.T) {
+	// goldmark runs with WithUnsafe, so a Markdown file can contain a literal
+	// <script>. Under the new loopback origin that script would be same-origin
+	// with every other file under the server root and could exfiltrate them.
+	// A nonce-based CSP keeps the legitimate inline mermaid loader executable
+	// while making the browser block any <script> from user Markdown.
+	md := "# Hi\n\n```mermaid\ngraph LR; A-->B\n```\n\n<script>fetch('/etc/passwd')</script>\n"
+	out, err := ToHTML("doc.md", md)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(out)
+
+	if !strings.Contains(s, `http-equiv="Content-Security-Policy"`) {
+		t.Errorf("CSP meta tag missing")
+	}
+	if !strings.Contains(s, "default-src 'none'") {
+		t.Errorf("CSP missing default-src 'none'")
+	}
+	if !strings.Contains(s, "script-src 'nonce-") {
+		t.Errorf("CSP missing script-src nonce")
+	}
+	// Our inline module loader must carry the nonce; otherwise mermaid breaks.
+	if !strings.Contains(s, `<script type="module" nonce="`) {
+		t.Errorf("inline mermaid script missing nonce attribute")
+	}
+}
+
+func TestToHTML_NonceIsFreshPerRender(t *testing.T) {
+	out1, err := ToHTML("a.md", "```mermaid\nA-->B\n```\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	out2, err := ToHTML("a.md", "```mermaid\nA-->B\n```\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(out1) == string(out2) {
+		t.Errorf("expected different nonces between renders, got identical output")
+	}
+}
+
+func TestSourceToHTML_EscapesFilename(t *testing.T) {
+	// The filename is reflected into <title> and <h1> verbatim before this fix,
+	// so any HTML in the basename (possible when the loopback server follows a
+	// link to a hostile file name) would execute. Filenames must be escaped.
+	out, err := SourceToHTML("<img src=x onerror=alert(1)>.txt", "hi\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(out), "<img src=x onerror=alert(1)>") {
+		t.Errorf("SourceToHTML rendered unescaped <img> from filename")
+	}
+	if !strings.Contains(string(out), "&lt;img src=x onerror=alert(1)&gt;") {
+		t.Errorf("SourceToHTML did not HTML-escape filename")
+	}
+}
