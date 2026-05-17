@@ -4,6 +4,8 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"image/color"
@@ -336,11 +338,14 @@ func resolveLatestVersion(repo string) (string, error) {
 }
 
 // downloadLatest fetches the platform-appropriate release tarball into a
-// temp file and returns its path.
+// temp file, verifies its SHA-256 against the published checksums.txt, and
+// returns the temp file path. A mismatch deletes the temp file and returns
+// an error so a tampered or partial download cannot reach the install step.
 func downloadLatest(version string) (string, error) {
 	versionNoV := strings.TrimPrefix(version, "v")
 	asset := fmt.Sprintf("miru_%s_%s_%s.tar.gz", versionNoV, runtime.GOOS, runtime.GOARCH)
 	url := fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", repo, version, asset)
+	checksumsURL := fmt.Sprintf("https://github.com/%s/releases/download/%s/checksums.txt", repo, version)
 
 	tmp, err := os.CreateTemp("", "miru-update-*.tar.gz")
 	if err != nil {
@@ -360,7 +365,59 @@ func downloadLatest(version string) (string, error) {
 	if _, err := io.Copy(tmp, resp.Body); err != nil {
 		return "", err
 	}
+
+	if err := verifyChecksum(checksumsURL, asset, tmp.Name()); err != nil {
+		os.Remove(tmp.Name())
+		return "", err
+	}
 	return tmp.Name(), nil
+}
+
+// verifyChecksum fetches checksums.txt from checksumsURL, looks up the
+// SHA-256 entry for asset, and confirms it matches the digest of localPath.
+// Returns an error if the entry is missing or the digests differ — protects
+// `miru update` from a tampered or partial tarball reaching the install step.
+func verifyChecksum(checksumsURL, asset, localPath string) error {
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Get(checksumsURL)
+	if err != nil {
+		return fmt.Errorf("fetch checksums: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("fetch checksums: HTTP %d", resp.StatusCode)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("read checksums: %w", err)
+	}
+
+	var expected string
+	for _, line := range strings.Split(string(body), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[1] == asset {
+			expected = fields[0]
+			break
+		}
+	}
+	if expected == "" {
+		return fmt.Errorf("no checksum entry for %s", asset)
+	}
+
+	f, err := os.Open(localPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+	actual := hex.EncodeToString(h.Sum(nil))
+	if actual != expected {
+		return fmt.Errorf("checksum mismatch for %s: expected %s, got %s", asset, expected, actual)
+	}
+	return nil
 }
 
 // replaceBinary extracts the miru binary from tarball and atomically renames

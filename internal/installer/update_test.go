@@ -4,6 +4,11 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -107,6 +112,86 @@ func TestReplaceBinaryAtomicSwap(t *testing.T) {
 	}
 	if _, err := os.Stat(dst + ".new"); !os.IsNotExist(err) {
 		t.Errorf(".new tempfile should be gone, got %v", err)
+	}
+}
+
+func TestVerifyChecksumMatches(t *testing.T) {
+	tmp := t.TempDir()
+	local := filepath.Join(tmp, "miru_0.6.0_darwin_arm64.tar.gz")
+	payload := []byte("pretend-this-is-a-tarball")
+	if err := os.WriteFile(local, payload, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	digest := sha256.Sum256(payload)
+	checksums := fmt.Sprintf("%s  miru_0.6.0_darwin_arm64.tar.gz\n%s  miru_0.6.0_linux_amd64.tar.gz\n",
+		hex.EncodeToString(digest[:]), "0000000000000000000000000000000000000000000000000000000000000000")
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(checksums))
+	}))
+	defer srv.Close()
+
+	if err := verifyChecksum(srv.URL, "miru_0.6.0_darwin_arm64.tar.gz", local); err != nil {
+		t.Errorf("verifyChecksum: %v", err)
+	}
+}
+
+func TestVerifyChecksumMismatch(t *testing.T) {
+	tmp := t.TempDir()
+	local := filepath.Join(tmp, "miru_0.6.0_darwin_arm64.tar.gz")
+	if err := os.WriteFile(local, []byte("real payload"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	checksums := "deadbeef  miru_0.6.0_darwin_arm64.tar.gz\n"
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(checksums))
+	}))
+	defer srv.Close()
+
+	err := verifyChecksum(srv.URL, "miru_0.6.0_darwin_arm64.tar.gz", local)
+	if err == nil {
+		t.Fatal("verifyChecksum: want mismatch error, got nil")
+	}
+	if !bytes.Contains([]byte(err.Error()), []byte("mismatch")) {
+		t.Errorf("error should mention mismatch; got %v", err)
+	}
+}
+
+func TestVerifyChecksumMissingEntry(t *testing.T) {
+	tmp := t.TempDir()
+	local := filepath.Join(tmp, "miru_0.6.0_darwin_arm64.tar.gz")
+	if err := os.WriteFile(local, []byte("payload"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	checksums := "abcd1234  some-other-asset.tar.gz\n"
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(checksums))
+	}))
+	defer srv.Close()
+
+	err := verifyChecksum(srv.URL, "miru_0.6.0_darwin_arm64.tar.gz", local)
+	if err == nil || !bytes.Contains([]byte(err.Error()), []byte("no checksum entry")) {
+		t.Errorf("want 'no checksum entry' error, got %v", err)
+	}
+}
+
+func TestVerifyChecksumServerError(t *testing.T) {
+	tmp := t.TempDir()
+	local := filepath.Join(tmp, "x.tar.gz")
+	if err := os.WriteFile(local, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	if err := verifyChecksum(srv.URL, "x.tar.gz", local); err == nil {
+		t.Error("verifyChecksum: want error on HTTP 404, got nil")
 	}
 }
 
