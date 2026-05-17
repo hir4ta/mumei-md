@@ -1,0 +1,70 @@
+name: codex-review-gate
+
+# Status check that ensures the ChatGPT Codex Connector App has
+# acknowledged this PR before merge.
+#
+# Codex signals on a PR via two channels:
+#   - Reactions on the PR body:
+#       eyes (👀) — review in progress
+#       +1   (👍) — review complete, no findings
+#   - A PR review or issue comment when it has findings.
+#
+# This job passes as soon as any of those signals appears. The
+# `required_review_thread_resolution` rule on `main` handles the
+# findings case by blocking merge until each thread is resolved, so
+# we only need to prove that Codex *saw* the PR.
+#
+# The job fails if no signal arrives within the window — that means
+# Codex never ran (App outage, repo-access misconfiguration, or
+# Codex Cloud disabled), and the PR should not silently merge as if
+# it had been reviewed.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  wait-for-codex:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wait for Codex acknowledgement
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          BOT: chatgpt-codex-connector[bot]
+        run: |
+          set -eu
+          for i in $(seq 1 30); do
+            # +1 reaction = review complete, no findings.
+            if gh api "repos/$REPO/issues/$PR/reactions" \
+                --jq ".[] | select(.user.login == \"$BOT\" and .content == \"+1\")" \
+                | grep -q .; then
+              echo "::notice::Codex acknowledged: no findings (+1 reaction)"
+              exit 0
+            fi
+            # Issue comment by Codex = findings posted as PR comment.
+            # Thread-resolution rule on main gates merge separately.
+            if gh api "repos/$REPO/issues/$PR/comments" \
+                --jq ".[] | select(.user.login == \"$BOT\")" \
+                | grep -q .; then
+              echo "::notice::Codex acknowledged: findings posted as comment"
+              exit 0
+            fi
+            # Formal review by Codex = same as above, different channel.
+            if gh api "repos/$REPO/pulls/$PR/reviews" \
+                --jq ".[] | select(.user.login == \"$BOT\")" \
+                | grep -q .; then
+              echo "::notice::Codex acknowledged: review posted"
+              exit 0
+            fi
+            echo "Waiting for Codex... ($i/30, 20s interval)"
+            sleep 20
+          done
+          echo "::error::Codex did not acknowledge this PR within ~10 minutes. Check the ChatGPT Codex Connector App's repository access and Codex Cloud's Automatic reviews setting for hir4ta/miru."
+          exit 1
