@@ -70,6 +70,7 @@ Files with a `.md` / `.markdown` extension take the markdown path (glamour ANSI 
 | `g` / `G` | Top / bottom |
 | `{` / `}` | Jump to previous / next heading (markdown only) |
 | `b` | Open in browser |
+| `s` | Settings (theme picker) |
 | `?` | Help |
 | `q` | Quit |
 
@@ -85,6 +86,8 @@ The default is a warm coral/terracotta theme inspired by Claude Code (`claude`).
 | `nord` | cool arctic blue/gray minimalist |
 | `dracula` | classic purple/pink/cyan dark |
 | `tokyo-night` | deep blue cyberpunk |
+
+Press `s` in the TUI to open the theme picker — selections apply live and persist to the config file. The CLI flag, env var, and config file below are still supported for scripting and pinning a default.
 
 ### Precedence
 
