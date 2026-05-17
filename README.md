@@ -4,16 +4,26 @@ A rich-looking Markdown viewer you can open in your terminal.
 
 ## Install
 
-One-liner (downloads the latest release for your platform and installs to `~/.local/bin`):
+One-liner. No Go toolchain required — downloads a prebuilt static binary for your platform, drops it in `~/.local/bin`, and appends a PATH entry to your shell rc so `mm` works in any new shell:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/hir4ta/mumei-md/main/install.sh | sh
 ```
 
-Pin a version or change the install location:
+Supported platforms: macOS (Intel / Apple Silicon), Linux (x86_64 / arm64). Shell rc handled: zsh, bash, fish.
+
+Environment overrides:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `VERSION` | latest release | pin a specific tag (e.g. `v0.1.0`) |
+| `INSTALL_DIR` | `$HOME/.local/bin` | binary destination |
+| `MUMEI_NO_MODIFY_PATH` | `0` | set to `1` to skip the shell rc update |
+
+Example:
 
 ```sh
-VERSION=v0.1.0 INSTALL_DIR=/usr/local/bin \
+VERSION=v0.1.0 INSTALL_DIR=/usr/local/bin MUMEI_NO_MODIFY_PATH=1 \
   curl -fsSL https://raw.githubusercontent.com/hir4ta/mumei-md/main/install.sh | sh
 ```
 
