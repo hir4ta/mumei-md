@@ -75,10 +75,17 @@ best theme experience.
 - README's `VERSION=v0.1.0` is an *example* in the install one-liner.
   PRs that "update" this example to a current tag are noise — flag.
 - Files under `cmd/`, `internal/`, `README.md`, `install.sh`,
-  `sample*`, `LICENSE`, `SECURITY.md`, `PRIVACY.md`,
-  `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `AGENTS.md` are SHIPPED
-  to users. They MUST be **English**. Japanese intent notes go in
-  `<!-- HTML comments -->` only.
+  `LICENSE`, `SECURITY.md`, `PRIVACY.md`, `CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, `AGENTS.md` are SHIPPED to users as
+  **explanatory text** and MUST be **English**. Japanese intent
+  notes go in `<!-- HTML comments -->` only.
+- `sample*` files are shipped as **demo content** for renderer
+  testing, not as explanatory text. Multilingual sections are
+  fine and in fact desirable — Markdown demos benefit from
+  showing how the renderer handles different writing systems
+  (the paper-note CSS pulls Kiwi Maru for CJK exactly for this
+  reason). Do not flag Japanese / other-language sections in
+  `sample*`.
 - `CLAUDE.md` and `.claude/` are dev-only — Japanese is fine.
 - `install.sh` MUST stay a thin bootstrap. Adding interactive UX,
   PATH editing, or `eval` of downloaded content there is out of
