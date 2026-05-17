@@ -78,7 +78,7 @@ func main() {
 	if resolved, err := filepath.EvalSymlinks(absPath); err == nil {
 		absPath = resolved
 	}
-	srv, err := server.Start(filepath.Dir(absPath))
+	srv, err := server.Start(projectRoot(absPath))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "start server: %v\n", err)
 		os.Exit(1)
@@ -110,6 +110,29 @@ flags:
   --theme NAME                             color theme (see --list-themes)
   --list-themes                            list available themes and exit
   --version                                print version and exit`)
+}
+
+// projectRoot finds the natural sandbox root for the loopback server by
+// walking up from the entry file's directory and returning the first ancestor
+// that holds a project marker (.git, go.mod, package.json, Cargo.toml,
+// pyproject.toml). Falls back to the file's own directory when no marker is
+// found, so floating Markdown files still get sane (file-local) sandboxing.
+func projectRoot(file string) string {
+	fileDir := filepath.Dir(file)
+	markers := []string{".git", "go.mod", "package.json", "Cargo.toml", "pyproject.toml"}
+	dir := fileDir
+	for {
+		for _, m := range markers {
+			if _, err := os.Stat(filepath.Join(dir, m)); err == nil {
+				return dir
+			}
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return fileDir
+		}
+		dir = parent
+	}
 }
 
 // resolveTheme picks the theme using precedence:
