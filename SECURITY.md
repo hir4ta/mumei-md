@@ -71,6 +71,20 @@ miru's primary attack surfaces:
 - **Browser preview (`b` key).** The HTML page rendered for Markdown enables goldmark's `unsafe` mode (raw HTML pass-through) and runs mermaid with `securityLevel: "loose"` — matching the behavior of Obsidian and the VS Code Markdown preview. This is documented in README. Users should only browser-render Markdown they trust. The TUI view itself executes nothing.
 - **Config and PATH manipulation.** `miru install` writes to `~/.config/miru/config.json` and (optionally) appends a single line to the user's shell rc. The rc edit is idempotent (`rcContainsLine`) and clearly marked with `# added by miru installer`. No daemons, no startup hooks.
 
+## Review model
+
+miru is solo-maintained. To keep changes auditable without a co-maintainer:
+
+- **PRs are required for every change to `main`** (enforced by repository ruleset). Direct push, force push, and branch deletion are blocked. Linear history is required, so merges land as squash commits.
+- **Required CI checks** (all must pass before merge): `test` (`go test -race`), `shellcheck`, `actionlint`, `codeql (go)`, `codeql (actions)`, `govulncheck`, `scan` (gitleaks).
+- **Required conversation resolution** — any reviewer thread on a PR must be resolved before merge.
+- **Required approving reviewers: 0**, because GitHub disallows the PR author from approving their own PR and there is no co-maintainer. The gap is intentionally filled by automated reviewers, not by a rubber-stamp human:
+  - **Copilot code review** (ruleset-triggered) runs on every PR open and re-runs on push.
+  - **OpenAI Codex code review** (GitHub App + Codex Cloud) runs on every PR open. `AGENTS.md` at the repo root supplies the calibration (focus areas + "what NOT to flag" + severity rubric) so Codex's output is project-specific.
+- **Secret + supply-chain scanning** runs on every PR and weekly: gitleaks (PR + cron), CodeQL `+security-extended` (PR + cron), govulncheck (PR + cron + release gate), OpenSSF Scorecards (cron + branch-protection-rule trigger).
+
+Consequence: the OpenSSF Scorecard `Code-Review` and `Branch-Protection` `require approvers` items score below maximum, and we have accepted this trade-off (the corresponding alerts are dismissed with `won't fix` and link back here). The substitute controls above are stricter than a single human approver in several axes (Copilot + Codex catch issues humans miss; CI gates can't be waived) and they cost the maintainer nothing per PR.
+
 ## Out of scope
 
 - Issues in upstream dependencies that are not exploitable through miru's API. Report those to the upstream project; we will track via dependabot.
