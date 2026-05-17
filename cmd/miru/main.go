@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -11,6 +12,7 @@ import (
 	"github.com/hir4ta/miru/internal/config"
 	"github.com/hir4ta/miru/internal/installer"
 	"github.com/hir4ta/miru/internal/render"
+	"github.com/hir4ta/miru/internal/server"
 	"github.com/hir4ta/miru/internal/tui"
 )
 
@@ -65,7 +67,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	m := tui.New(path, string(raw), resolvedTheme)
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "abs %s: %v\n", path, err)
+		os.Exit(1)
+	}
+	srv, err := server.Start(filepath.Dir(absPath))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "start server: %v\n", err)
+		os.Exit(1)
+	}
+	defer srv.Stop()
+
+	m := tui.New(path, string(raw), resolvedTheme, srv)
 	final, err := tea.NewProgram(m).Run()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "run: %v\n", err)

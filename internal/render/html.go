@@ -5,10 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
-	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/yuin/goldmark"
@@ -452,42 +449,3 @@ func hasMermaidBlock(markdown string) bool {
 	return found
 }
 
-func OpenInBrowser(filename, content string) error {
-	var htmlBytes []byte
-	var err error
-	if IsMarkdown(filename) {
-		htmlBytes, err = ToHTML(filename, content)
-	} else {
-		htmlBytes, err = SourceToHTML(filename, content)
-	}
-	if err != nil {
-		return err
-	}
-
-	f, err := os.CreateTemp("", "miru-*.html")
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(htmlBytes); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-
-	return openCmd(f.Name())
-}
-
-func openCmd(path string) error {
-	var cmd *exec.Cmd
-	switch runtime.GOOS {
-	case "darwin":
-		cmd = exec.Command("open", path)
-	case "linux":
-		cmd = exec.Command("xdg-open", path)
-	default:
-		return fmt.Errorf("unsupported platform: %s", runtime.GOOS)
-	}
-	return cmd.Start()
-}
