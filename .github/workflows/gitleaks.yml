@@ -1,0 +1,40 @@
+name: gitleaks
+
+# Two trigger profiles:
+#   - pull_request / push:main:  scan the diff for newly introduced secrets.
+#   - schedule (Mon 05:00 UTC):  full-history rescan so updated rule sets
+#                                 apply retroactively to the repo timeline.
+#
+# Findings open issues in the repo's Security tab. A non-zero exit fails
+# the workflow so the schedule alert surfaces in the actions log even if
+# the issues feed is unread.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

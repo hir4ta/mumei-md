@@ -1,0 +1,38 @@
+name: govulncheck
+
+# Runs Go's official vulnerability scanner against the source tree and
+# the resolved module graph. CodeQL catches code-pattern issues; this
+# catches known CVEs in dependencies that the current code path actually
+# reaches.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Wed 06:00 UTC — off-peak vs. CodeQL (Mon) / Scorecards (Mon) /
+    # gitleaks-weekly (Mon).
+    - cron: "0 6 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: govulncheck
+        uses: golang/govulncheck-action@b625fbe08f3bccbe446d94fbf87fcc875a4f50ee # v1
+        with:
+          go-version-input: stable
+          repo-checkout: false
