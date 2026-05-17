@@ -91,20 +91,10 @@ body.markdown-body {
 }
 .markdown-body blockquote {
   border-left: 4px solid var(--accent);
-  background: transparent;
   color: var(--muted);
   font-style: italic;
   padding: 0 1em;
   margin: 1em 0;
-  position: relative;
-}
-.markdown-body blockquote::before {
-  content: "※";
-  position: absolute;
-  left: -1.6em;
-  top: 0;
-  color: var(--accent);
-  font-style: normal;
 }
 .markdown-body ul, .markdown-body ol { padding-left: 1.6em; }
 .markdown-body ul { list-style: none; }
