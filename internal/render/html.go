@@ -24,7 +24,7 @@ import (
 var assetsFS embed.FS
 
 const htmlTemplate = `<!DOCTYPE html>
-<html lang="en">
+<html lang="mul">
 <head>
 <meta charset="utf-8">
 <title>{{.Title}}</title>
@@ -176,7 +176,7 @@ body.markdown-body {
   color: var(--ink);
 }
 .markdown-body table th {
-  font-family: "Caveat", cursive;
+  font-family: "Caveat", "Kiwi Maru", cursive;
   font-weight: 700;
   font-size: 1.2em;
   color: var(--accent);

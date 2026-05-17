@@ -88,6 +88,38 @@ func TestToHTML_FontsAlwaysLoadedMermaidGated(t *testing.T) {
 	}
 }
 
+func TestToHTML_PaperNoteStyleTokens(t *testing.T) {
+	// Regression guards for the paper-note look. These tokens are easy to
+	// drop accidentally during a CSS rewrite, so pin them down.
+	out, err := ToHTML("x.md", "# x\n\ntext\n\n---\n\nmore\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`lang="mul"`,           // multilingual <html> attribute
+		`content: "〜〜〜"`,       // Caveat-glyph <hr> divider
+		`--paper: #fdf6e3`,     // cream paper background variable
+		`max-width: 1100px`,    // widened page
+	} {
+		if !strings.Contains(string(out), want) {
+			t.Errorf("paper-note html missing %q", want)
+		}
+	}
+	// Old paper-note artefacts that have been removed must not creep back.
+	// (Pin SVG-wave <hr> by its unique viewBox, not by `data:image/svg+xml`
+	// alone — the upstream github-markdown.css legitimately uses data URIs.)
+	for _, dontWant := range []string{
+		`repeating-linear-gradient`, // the dropped horizontal ruling
+		`viewBox='0 0 120 12'`,      // the dropped SVG-wave <hr>
+		`"Klee One"`,                // replaced by Kiwi Maru
+		`content: "※"`,              // dropped blockquote gutter marker
+	} {
+		if strings.Contains(string(out), dontWant) {
+			t.Errorf("paper-note html should not contain %q (regression)", dontWant)
+		}
+	}
+}
+
 func TestSourceToHTML_StaysLocal(t *testing.T) {
 	out, err := SourceToHTML("main.go", "package main\n\nfunc main() {}\n")
 	if err != nil {
