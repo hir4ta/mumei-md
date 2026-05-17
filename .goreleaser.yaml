@@ -46,6 +46,25 @@ release:
   draft: false
   prerelease: auto
 
+brews:
+  - name: miru
+    repository:
+      owner: hir4ta
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/hir4ta/miru
+    description: A quiet file viewer for your terminal
+    license: MIT
+    commit_author:
+      name: hir4ta
+      email: shunichi@hir4ta.com
+    install: |
+      bin.install "miru"
+    test: |
+      assert_match "miru", shell_output("#{bin}/miru --version")
+
 changelog:
   sort: asc
   filters:

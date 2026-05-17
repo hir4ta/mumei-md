@@ -19,6 +19,14 @@ A quiet file viewer for your terminal. Markdown gets a full glamour render with 
 
 ## Install
 
+### Homebrew
+
+```sh
+brew install hir4ta/tap/miru
+```
+
+The tap lives at [hir4ta/homebrew-tap](https://github.com/hir4ta/homebrew-tap) and is updated automatically by every release.
+
 ### One-line bootstrap
 
 ```sh
