@@ -134,10 +134,16 @@ best theme experience.
 
 - Browser preview is opt-in (`b` key). Source files use
   `SourceToHTML`; Markdown uses `ToHTML`. The Markdown HTML page
-  embeds mermaid.js (jsDelivr) and the Caveat web font (Google
-  Fonts) used for the hand-drawn diagram look. The Source HTML
-  page is fully local and fetches nothing. Both behaviours are
-  documented in `PRIVACY.md`.
+  is rendered as a handwritten paper note (cream background +
+  horizontal ruling + Caveat for headings + Patrick Hand for
+  body + Klee One for CJK), so it always embeds the Google
+  Fonts stylesheet. When the Markdown also contains a `mermaid`
+  code block, the page additionally embeds mermaid.js from
+  jsDelivr and the diagram renders in `look: "handDrawn"`. The
+  Source HTML page is intentionally **not** styled as a note —
+  it stays a dark, monospace, fully-local page so reading code
+  is not impaired. Both behaviours are documented in
+  `PRIVACY.md`.
 - A PR that introduces additional third-party network egress (a
   new CDN, an analytics ping, a remote font on the Source path)
   MUST update `PRIVACY.md` and `SECURITY.md` in the same PR.

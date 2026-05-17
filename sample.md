@@ -126,11 +126,34 @@ done
 In the terminal, mermaid blocks render as plain code. Press `b` to open in the browser, where the diagram is drawn by mermaid.js.
 
 ```mermaid
-flowchart LR
-    A[Markdown] --> B(goldmark)
-    B --> C{Render target}
-    C -->|TUI| D[glamour + lipgloss]
-    C -->|Browser| E[HTML + mermaid.js]
+flowchart TD
+    Start([miru sample.md]) --> Read[Read file from disk]
+    Read --> Detect{File extension?}
+    Detect -->|.md / .markdown| MD([Markdown path])
+    Detect -->|.go .py .yaml ...| Src([Source path])
+
+    subgraph TUI[Terminal output]
+        MD --> Glamour[glamour ANSI render]
+        Glamour --> Lists[list post-process]
+        Src --> Chroma[chroma syntax highlight]
+        Chroma --> LineNum[prefix line numbers]
+        Lists --> View[viewport.SetContent]
+        LineNum --> View
+    end
+
+    subgraph Browser[Browser preview - press b]
+        MD --> Goldmark[goldmark HTML]
+        Goldmark --> Mermaid{Has mermaid?}
+        Mermaid -->|yes| Inject[mermaid.js + handDrawn + Caveat]
+        Mermaid -->|no| Plain[paper-note CSS]
+        Src --> SrcHTML[chroma HTML formatter]
+        Inject --> Open[open in default browser]
+        Plain --> Open
+        SrcHTML --> Open
+    end
+
+    View --> User([User])
+    Open --> User
 ```
 
 ## Table
