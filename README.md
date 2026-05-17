@@ -1,5 +1,11 @@
 # miru
 
+[![CI](https://github.com/hir4ta/miru/actions/workflows/ci.yml/badge.svg)](https://github.com/hir4ta/miru/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/hir4ta/miru/actions/workflows/codeql.yml/badge.svg)](https://github.com/hir4ta/miru/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hir4ta/miru/badge)](https://scorecard.dev/viewer/?uri=github.com/hir4ta/miru)
+[![Release](https://img.shields.io/github/v/release/hir4ta/miru?label=release)](https://github.com/hir4ta/miru/releases/latest)
+[![License](https://img.shields.io/github/license/hir4ta/miru)](./LICENSE)
+
 A quiet file viewer for your terminal. Markdown gets a full glamour render with mermaid in the browser; source and config files get chroma-powered syntax highlighting.
 
 <p align="center">
