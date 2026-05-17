@@ -38,7 +38,7 @@ func TestToHTML_FontsAlwaysLoadedMermaidGated(t *testing.T) {
 	withMermaid := "# x\n\n```mermaid\nflowchart LR\n A --> B\n```\n"
 	withoutMermaid := "# x\n\nplain markdown, no diagram.\n\n```go\nfunc main() {}\n```\n"
 
-	// Every Markdown preview pulls Caveat / Patrick Hand / Klee One for the
+	// Every Markdown preview pulls Caveat / Patrick Hand / Kiwi Maru for the
 	// paper-note look — regardless of mermaid presence.
 	cases := map[string]string{"with-mermaid": withMermaid, "no-mermaid": withoutMermaid}
 	for name, md := range cases {

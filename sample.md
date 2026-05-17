@@ -200,3 +200,48 @@ Glamour
 ## Long paragraph (wrapping check)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+## 日本語サンプル
+
+miru はターミナル向けの **Markdown ビューワー**です。日本語の段落もそのまま手書きの紙ノート風にブラウザでレンダリングされます。見出しは英語と同じく Caveat、本文 CJK は **Kiwi Maru** (Google Fonts) で描画されます。
+
+> ※ ターミナル (`miru sample.md`) では glamour の ANSI 出力、ブラウザ (`b` キー) では goldmark + 紙ノート CSS。同じファイルで二つの描画パスを切り替えます。
+
+### よく使う要素
+
+- **強調** は蛍光ペン風のハイライトになります
+- *斜体* もアクセント色で表示
+- インラインコードは `os.UserHomeDir()` のように落ち着いた sepia 下地
+- リンクは [miru の README](https://github.com/hir4ta/miru) のように波線の下線
+
+1. 番号付きリストも自然に並びます
+2. 入れ子も問題なし
+   1. 二段目はもう一段細かく
+   2. 縦罫線は引かずに余白だけで構造を示す
+
+### 簡単なコード例
+
+```go
+// 日本語コメント付きの Go コード
+func main() {
+    // ファイルを読み込む
+    content, err := os.ReadFile("sample.md")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println(string(content))
+}
+```
+
+### 表 (横スクロールなしで収まるか)
+
+| 項目 | 内容 | 備考 |
+|---|---|---|
+| TUI | glamour + lipgloss v2 | bubbletea v2 ベース |
+| ブラウザ | goldmark + mermaid.js | 紙ノート風 CSS |
+| インストーラ | bubbletea v2 + spinner | `miru install` / `miru update` |
+| 配布 | Homebrew tap + `curl \| sh` | 静的バイナリ、4 アーキ |
+
+---
+
+長文の段落も読みやすさを確認しておきます。Markdown は元々プレーンテキストとして読めることが価値の一つで、ブラウザに持ってきた瞬間に過剰な装飾で覆ってしまうと意味が薄れます。miru の紙ノート風スタイルは、**書き手の手元の雰囲気をそのまま閲覧側にも届ける**ことを狙っていて、装飾は控えめに、フォントとレイアウトだけで「ノートを覗き込んでいる」感覚を作る方向で調整しています。

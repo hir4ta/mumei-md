@@ -135,9 +135,8 @@ best theme experience.
 - Browser preview is opt-in (`b` key). Source files use
   `SourceToHTML`; Markdown uses `ToHTML`. The Markdown HTML page
   is rendered as a handwritten paper note (cream background +
-  horizontal ruling + Caveat for headings + Patrick Hand for
-  body + Kiwi Maru for CJK), so it always embeds the Google
-  Fonts stylesheet. When the Markdown also contains a `mermaid`
+  Caveat for headings + Patrick Hand for body + Kiwi Maru for
+  CJK), so it always embeds the Google Fonts stylesheet. When the Markdown also contains a `mermaid`
   code block, the page additionally embeds mermaid.js from
   jsDelivr and the diagram renders in `look: "handDrawn"`. The
   Source HTML page is intentionally **not** styled as a note —
