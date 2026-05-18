@@ -1,0 +1,34 @@
+{
+  // markdownlint-cli2 config — keep the rule surface small. Documents
+  // here are short and hand-written, so we disable cosmetic rules
+  // that fight prose (MD013 line-length, MD033 inline HTML, MD040
+  // fenced-code-language, MD034 bare URLs) and leave structural
+  // rules in force — especially MD051 (broken link fragments) and
+  // MD056 (broken table columns), which are the main reasons this
+  // lint exists in this repo.
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": { "siblings_only": true },
+    "MD033": false,
+    "MD034": false,
+    "MD040": false,
+    "MD041": false
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    ".git",
+    "node_modules",
+    "dist",
+    // sample.md intentionally exercises a wide variety of Markdown
+    // syntax (mixed bullet styles, nested blockquotes) to give the
+    // glamour TUI renderer a realistic test fixture.
+    "sample.md",
+    // Author-private content (skills, rules, agent prompts). Format
+    // policy here is up to each skill author.
+    ".claude",
+    // GitHub issue/PR templates rely on conventions (e.g. `$ cmd`
+    // shell prompts) that markdownlint flags as MD014.
+    ".github/ISSUE_TEMPLATE"
+  ]
+}

@@ -30,7 +30,7 @@ func TestToHTML(t *testing.T) {
 			t.Errorf("html missing %q", want)
 		}
 	}
-	_ = os.WriteFile("/tmp/miru-test.html", out, 0644)
+	_ = os.WriteFile("/tmp/miru-test.html", out, 0o644)
 	t.Logf("wrote /tmp/miru-test.html (%d bytes)", len(out))
 }
 
@@ -101,10 +101,10 @@ func TestToHTML_PaperNoteStyleTokens(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, want := range []string{
-		`lang="mul"`,           // multilingual <html> attribute
-		`content: "〜〜〜"`,       // Caveat-glyph <hr> divider
-		`--paper: #fdf6e3`,     // cream paper background variable
-		`max-width: 1100px`,    // widened page
+		`lang="mul"`,        // multilingual <html> attribute
+		`content: "〜〜〜"`,    // Caveat-glyph <hr> divider
+		`--paper: #fdf6e3`,  // cream paper background variable
+		`max-width: 1100px`, // widened page
 	} {
 		if !strings.Contains(string(out), want) {
 			t.Errorf("paper-note html missing %q", want)

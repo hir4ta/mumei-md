@@ -6,13 +6,12 @@ package installer
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"os"
 	"runtime"
 	"runtime/debug"
 	"strings"
 	"time"
-
-	"image/color"
 
 	"charm.land/bubbles/v2/progress"
 	"charm.land/bubbles/v2/spinner"
