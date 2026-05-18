@@ -34,10 +34,11 @@ From `v0.7.0` onward, every release artifact is signed and attested:
 - **`checksums.txt`** is signed with a [Sigstore](https://www.sigstore.dev/) keyless cosign signature. The certificate identity is the workflow that produced the release (`https://github.com/hir4ta/miru/.github/workflows/release.yml@refs/tags/<tag>`), and the issuer is GitHub's OIDC provider.
 - **Each tarball** carries an [SLSA build provenance](https://slsa.dev/) attestation published to the GitHub attestation store and the Sigstore transparency log.
 
-End-to-end verification (use `cosign` from <https://docs.sigstore.dev/cosign/installation/> and `gh` from <https://cli.github.com/>):
+End-to-end verification (use `cosign` from <https://docs.sigstore.dev/cosign/installation/> and `gh` from <https://cli.github.com/>). The flow below targets releases that ship a Sigstore bundle (`.sigstore.json`). Releases `v0.7.0`–`v0.7.4` used the legacy `.sig`/`.pem` pair instead; verify those with `--certificate checksums.txt.pem --signature checksums.txt.sig` in place of `--bundle`.
 
 ```sh
-TAG=v0.7.0
+# Resolve the latest release tag (or set TAG manually to a specific release).
+TAG=$(curl -fsSI https://github.com/hir4ta/miru/releases/latest | awk 'tolower($1) == "location:" {print $2}' | awk -F/ '{print $NF}' | tr -d '\r')
 ASSET=miru_${TAG#v}_$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz
 URL=https://github.com/hir4ta/miru/releases/download/${TAG}
 
