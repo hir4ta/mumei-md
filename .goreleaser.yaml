@@ -42,21 +42,19 @@ sboms:
 # Keyless Sigstore signing via the GitHub OIDC token. No long-lived
 # secrets — the signing identity is the workflow that produced the
 # release (https://github.com/hir4ta/miru/.github/workflows/release.yml).
-# Verify locally:
+# Cosign v3 emits a single Sigstore bundle (.sigstore.json) that
+# combines the certificate and signature. Verify locally:
 #   cosign verify-blob \
+#     --bundle checksums.txt.sigstore.json \
 #     --certificate-identity-regexp 'https://github.com/hir4ta/miru/.+' \
 #     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-#     --certificate checksums.txt.pem \
-#     --signature checksums.txt.sig \
 #     checksums.txt
 signs:
   - cmd: cosign
-    signature: "${artifact}.sig"
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.sigstore.json"
     args:
       - "sign-blob"
-      - "--output-signature=${signature}"
-      - "--output-certificate=${certificate}"
+      - "--bundle=${signature}"
       - "--yes"
       - "${artifact}"
     artifacts: checksum

@@ -85,10 +85,9 @@ From `v0.7.0` onward, every release is signed with Sigstore keyless cosign signa
 # 1. Verify the checksums.txt signature (proves the file came from this
 #    repo's release workflow).
 cosign verify-blob \
+  --bundle checksums.txt.sigstore.json \
   --certificate-identity-regexp 'https://github.com/hir4ta/miru/.+' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --certificate checksums.txt.pem \
-  --signature checksums.txt.sig \
   checksums.txt
 
 # 2. Verify the tarball matches checksums.txt.

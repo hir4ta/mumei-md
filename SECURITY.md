@@ -41,17 +41,15 @@ TAG=v0.7.0
 ASSET=miru_${TAG#v}_$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz
 URL=https://github.com/hir4ta/miru/releases/download/${TAG}
 
-curl -fsSL "${URL}/${ASSET}"           -o "${ASSET}"
-curl -fsSL "${URL}/checksums.txt"      -o checksums.txt
-curl -fsSL "${URL}/checksums.txt.sig"  -o checksums.txt.sig
-curl -fsSL "${URL}/checksums.txt.pem"  -o checksums.txt.pem
+curl -fsSL "${URL}/${ASSET}"                    -o "${ASSET}"
+curl -fsSL "${URL}/checksums.txt"               -o checksums.txt
+curl -fsSL "${URL}/checksums.txt.sigstore.json" -o checksums.txt.sigstore.json
 
 # 1. Cosign signature on checksums.txt
 cosign verify-blob \
+  --bundle checksums.txt.sigstore.json \
   --certificate-identity-regexp "https://github.com/hir4ta/miru/.+" \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --certificate checksums.txt.pem \
-  --signature checksums.txt.sig \
   checksums.txt
 
 # 2. Tarball SHA-256 matches checksums.txt
