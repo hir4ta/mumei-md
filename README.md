@@ -79,16 +79,15 @@ VERSION=v0.1.0 INSTALL_DIR=/usr/local/bin MIRU_NO_MODIFY_PATH=1 \
 
 ### Verify release artifacts
 
-From `v0.7.0` onward, every release is signed with Sigstore keyless cosign signatures and ships SLSA build provenance attestations. To verify a downloaded tarball end-to-end:
+From `v0.7.0` onward, every release is signed with Sigstore keyless cosign signatures and ships SLSA build provenance attestations. The commands below target releases that publish a Sigstore bundle (`checksums.txt.sigstore.json`); releases `v0.7.0`–`v0.7.4` shipped legacy `.sig`/`.pem` files instead — see [SECURITY.md](./SECURITY.md#verifying-releases) for that flow. To verify a downloaded tarball end-to-end:
 
 ```sh
 # 1. Verify the checksums.txt signature (proves the file came from this
 #    repo's release workflow).
 cosign verify-blob \
+  --bundle checksums.txt.sigstore.json \
   --certificate-identity-regexp 'https://github.com/hir4ta/miru/.+' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --certificate checksums.txt.pem \
-  --signature checksums.txt.sig \
   checksums.txt
 
 # 2. Verify the tarball matches checksums.txt.

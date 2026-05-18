@@ -34,24 +34,23 @@ From `v0.7.0` onward, every release artifact is signed and attested:
 - **`checksums.txt`** is signed with a [Sigstore](https://www.sigstore.dev/) keyless cosign signature. The certificate identity is the workflow that produced the release (`https://github.com/hir4ta/miru/.github/workflows/release.yml@refs/tags/<tag>`), and the issuer is GitHub's OIDC provider.
 - **Each tarball** carries an [SLSA build provenance](https://slsa.dev/) attestation published to the GitHub attestation store and the Sigstore transparency log.
 
-End-to-end verification (use `cosign` from <https://docs.sigstore.dev/cosign/installation/> and `gh` from <https://cli.github.com/>):
+End-to-end verification (use `cosign` from <https://docs.sigstore.dev/cosign/installation/> and `gh` from <https://cli.github.com/>). The flow below targets releases that ship a Sigstore bundle (`.sigstore.json`); for legacy releases (`v0.7.0`–`v0.7.4`) jump to [Legacy releases](#legacy-releases-v070v074).
 
 ```sh
-TAG=v0.7.0
+# Resolve the latest release tag (or set TAG manually to a specific release).
+TAG=$(curl -fsSI https://github.com/hir4ta/miru/releases/latest | awk 'tolower($1) == "location:" {print $2}' | awk -F/ '{print $NF}' | tr -d '\r')
 ASSET=miru_${TAG#v}_$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz
 URL=https://github.com/hir4ta/miru/releases/download/${TAG}
 
-curl -fsSL "${URL}/${ASSET}"           -o "${ASSET}"
-curl -fsSL "${URL}/checksums.txt"      -o checksums.txt
-curl -fsSL "${URL}/checksums.txt.sig"  -o checksums.txt.sig
-curl -fsSL "${URL}/checksums.txt.pem"  -o checksums.txt.pem
+curl -fsSL "${URL}/${ASSET}"                    -o "${ASSET}"
+curl -fsSL "${URL}/checksums.txt"               -o checksums.txt
+curl -fsSL "${URL}/checksums.txt.sigstore.json" -o checksums.txt.sigstore.json
 
 # 1. Cosign signature on checksums.txt
 cosign verify-blob \
+  --bundle checksums.txt.sigstore.json \
   --certificate-identity-regexp "https://github.com/hir4ta/miru/.+" \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --certificate checksums.txt.pem \
-  --signature checksums.txt.sig \
   checksums.txt
 
 # 2. Tarball SHA-256 matches checksums.txt
@@ -62,6 +61,30 @@ gh attestation verify "${ASSET}" --repo hir4ta/miru
 ```
 
 Any failure of step 1 or 3 means the artifact did not come from this repository's release pipeline — do not run it.
+
+### Legacy releases (`v0.7.0`–`v0.7.4`)
+
+These releases predate the cosign v3 bundle migration; they ship separate `.sig`/`.pem` files instead of a `.sigstore.json` bundle. Substitute the download and verification steps with:
+
+```sh
+TAG=v0.7.4  # or v0.7.0, v0.7.1, v0.7.2, v0.7.3
+ASSET=miru_${TAG#v}_$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz
+URL=https://github.com/hir4ta/miru/releases/download/${TAG}
+
+curl -fsSL "${URL}/${ASSET}"          -o "${ASSET}"
+curl -fsSL "${URL}/checksums.txt"     -o checksums.txt
+curl -fsSL "${URL}/checksums.txt.sig" -o checksums.txt.sig
+curl -fsSL "${URL}/checksums.txt.pem" -o checksums.txt.pem
+
+cosign verify-blob \
+  --certificate checksums.txt.pem \
+  --signature checksums.txt.sig \
+  --certificate-identity-regexp "https://github.com/hir4ta/miru/.+" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  checksums.txt
+```
+
+Steps 2 (`shasum -a 256 -c`) and 3 (`gh attestation verify`) are unchanged.
 
 ## Threat model summary
 
