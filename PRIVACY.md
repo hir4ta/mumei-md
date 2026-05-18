@@ -35,7 +35,7 @@ The Markdown browser preview always embeds the Google Fonts stylesheet (`https:/
 | Path | When | Contents |
 |---|---|---|
 | `~/.config/miru/config.json` | First time you change the theme via `s` | `{"theme": "..."}` |
-| `<INSTALL_DIR>/miru` (default `~/.local/bin`) | After `curl | sh` bootstrap or `miru install` | The binary itself |
+| `<INSTALL_DIR>/miru` (default `~/.local/bin`) | After `curl \| sh` bootstrap or `miru install` | The binary itself |
 | Shell rc (`.zshrc` / `.bashrc` / `.bash_profile` / `config.fish`) | After `miru install` if PATH does not already contain the install dir | One marked block: `# added by miru installer\nexport PATH="..."` |
 | `$TMPDIR/miru-update-*.tar.gz` | During `miru update` | The release tarball, removed on success or checksum mismatch |
 

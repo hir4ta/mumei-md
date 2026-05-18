@@ -12,8 +12,9 @@ type Config struct {
 }
 
 // Path returns the resolved config file location:
-//   $XDG_CONFIG_HOME/miru/config.json
-//   or $HOME/.config/miru/config.json (fallback)
+//
+//	$XDG_CONFIG_HOME/miru/config.json
+//	or $HOME/.config/miru/config.json (fallback)
 func Path() (string, error) {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
 		return filepath.Join(xdg, "miru", "config.json"), nil

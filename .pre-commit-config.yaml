@@ -1,0 +1,39 @@
+# pre-commit (https://pre-commit.com) — local quality gate that catches
+# what CI misses cheaply. Scope is intentionally minimal:
+#   - go fmt drift (gofumpt) — CI only runs `go vet`, not fmt
+#   - markdown drift + broken in-doc anchors (markdownlint MD051)
+#   - basic file hygiene (whitespace, large files, merge conflict markers)
+#
+# CI already covers shellcheck / actionlint / gitleaks / codeql /
+# govulncheck / go test, so we deliberately do NOT mirror those here.
+# Update pinned revs with `pre-commit autoupdate`.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=512"]
+      - id: check-merge-conflict
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.18.1
+    hooks:
+      - id: markdownlint-cli2
+
+  # gofumpt via locally-installed binary (system). Contributors must
+  # `brew install gofumpt` (or `go install mvdan.cc/gofumpt@latest`).
+  # We avoid the `language: golang` variant because it pulls gofumpt
+  # into pre-commit's cache via `go install`, which makes hook startup
+  # depend on the network on first run.
+  - repo: local
+    hooks:
+      - id: gofumpt
+        name: gofumpt (-w)
+        entry: gofumpt -w
+        language: system
+        types: [go]
+        require_serial: true

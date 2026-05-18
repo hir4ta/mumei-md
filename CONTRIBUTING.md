@@ -18,10 +18,21 @@ go build ./...
 ```
 
 Requirements:
+
 - Go 1.26 or newer (see `go.mod`).
 - A terminal that supports 24-bit color for the best theme experience.
 - `actionlint` (optional) if you touch `.github/workflows/*.yml`.
 - `shellcheck` (optional) if you touch `install.sh`.
+
+### Pre-commit hooks (recommended)
+
+A small `.pre-commit-config.yaml` runs `gofumpt` (formatting), `markdownlint-cli2` (broken anchors and table integrity), and basic file hygiene checks. It deliberately does not duplicate what CI already covers (vet, test, shellcheck, actionlint, gitleaks, govulncheck, codeql).
+
+```sh
+brew install pre-commit gofumpt   # or: pip install pre-commit && go install mvdan.cc/gofumpt@latest
+pre-commit install                # registers .git/hooks/pre-commit
+pre-commit run --all-files        # one-time sweep (optional)
+```
 
 ## Before submitting a pull request
 
